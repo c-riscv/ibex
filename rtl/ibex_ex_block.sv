@@ -115,7 +115,7 @@ module ibex_ex_block #(
   /////////
 
   ibex_alu #(
-    .RV32T(RV32T)
+    .RV32T(RV32T),
     .RV32B(RV32B)
   ) alu_i (
     .operator_i         (alu_operator_i),
