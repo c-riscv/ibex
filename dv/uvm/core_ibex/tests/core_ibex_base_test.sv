@@ -43,12 +43,16 @@ class core_ibex_base_test extends uvm_test;
   //       core_ibex/scripts/scripts_lib.py: keep them in sync!
   function string get_isa_string();
     bit     RV32E;
+    bit     RV32T;
     rv32m_e RV32M;
     rv32b_e RV32B;
     string  isa;
 
     if (!uvm_config_db#(bit)::get(null, "", "RV32E", RV32E)) begin
       `uvm_fatal(`gfn, "Cannot get RV32E parameter")
+    end
+    if (!uvm_config_db#(bit)::get(null, "", "RV32T", RV32T)) begin
+      `uvm_fatal(`gfn, "Cannot get RV32T parameter")
     end
     if (!uvm_config_db#(rv32m_e)::get(null, "", "RV32M", RV32M)) begin
       `uvm_fatal(`gfn, "Cannot get RV32M parameter")
@@ -59,7 +63,7 @@ class core_ibex_base_test extends uvm_test;
 
     // Construct the right ISA string for the cosimulator by looking at top-level testbench
     // parameters.
-    isa = {"rv32", RV32E ? "e" : "i"};
+    isa = {"rv32", RV32E ? "e" : RV32T ? "t" :"i"};
     if (RV32M != RV32MNone) isa = {isa, "m"};
     isa = {isa, "c"};
     case (RV32B)

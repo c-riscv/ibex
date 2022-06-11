@@ -20,6 +20,7 @@ module ibex_core import ibex_pkg::*; #(
   parameter int unsigned MHPMCounterNum    = 0,
   parameter int unsigned MHPMCounterWidth  = 40,
   parameter bit          RV32E             = 1'b0,
+  parameter bit          RV32T             = 1'b0,
   parameter rv32m_e      RV32M             = RV32MFast,
   parameter rv32b_e      RV32B             = RV32BNone,
   parameter bit          BranchTargetALU   = 1'b0,
@@ -492,6 +493,7 @@ module ibex_core import ibex_pkg::*; #(
 
   ibex_id_stage #(
     .RV32E          (RV32E),
+    .RV32T          (RV32T),
     .RV32M          (RV32M),
     .RV32B          (RV32B),
     .BranchTargetALU(BranchTargetALU),
@@ -652,6 +654,7 @@ module ibex_core import ibex_pkg::*; #(
   assign unused_illegal_insn_id = illegal_insn_id;
 
   ibex_ex_block #(
+    .RV32T          (RV32T),
     .RV32M          (RV32M),
     .RV32B          (RV32B),
     .BranchTargetALU(BranchTargetALU)
@@ -942,6 +945,7 @@ module ibex_core import ibex_pkg::*; #(
     .PMPGranularity   (PMPGranularity),
     .PMPNumRegions    (PMPNumRegions),
     .RV32E            (RV32E),
+    .RV32T            (RV32T),
     .RV32M            (RV32M),
     .RV32B            (RV32B)
   ) cs_registers_i (

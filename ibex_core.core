@@ -70,6 +70,11 @@ parameters:
     default: 0
     paramtype: vlogparam
 
+  RV32T:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    
   RV32M:
     datatype: str
     default: ibex_pkg::RV32MFast

@@ -23,6 +23,12 @@ parameters:
     default: 0
     description: "Enable the E ISA extension (reduced register set) [0/1]"
 
+  RV32T:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enable the T ISA extension (reduced register set) [0/1]"
+
   RV32M:
     datatype: str
     default: ibex_pkg::RV32MFast

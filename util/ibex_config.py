@@ -22,6 +22,7 @@ class Config:
     '''An object representing an Ibex configuration'''
     known_fields = [
         ('RV32E', bool),
+        ('RV32T', bool),
         ('RV32M', str),
         ('RV32B', str),
         ('RegFile', str),
@@ -60,6 +61,7 @@ class Config:
         self.params = yml
 
         self.rv32e = Config.read_bool('RV32E', yml)
+        self.rv32t = Config.read_bool('RV32T', yml)
         self.rv32m = Config.read_str('RV32M', yml)
         self.rv32b = Config.read_str('RV32B', yml)
         self.reg_file = Config.read_str('RegFile', yml)

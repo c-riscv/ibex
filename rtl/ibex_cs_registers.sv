@@ -25,6 +25,7 @@ module ibex_cs_registers #(
   parameter int unsigned      PMPGranularity    = 0,
   parameter int unsigned      PMPNumRegions     = 4,
   parameter bit               RV32E             = 0,
+  parameter bit               RV32T             = 0,
   parameter ibex_pkg::rv32m_e RV32M             = ibex_pkg::RV32MFast,
   parameter ibex_pkg::rv32b_e RV32B             = ibex_pkg::RV32BNone
 ) (
@@ -129,19 +130,20 @@ module ibex_cs_registers #(
 
   // misa
   localparam logic [31:0] MISA_VALUE =
-      (0                 <<  0)  // A - Atomic Instructions extension
-    | (RV32BEnabled      <<  1)  // B - Bit-Manipulation extension
-    | (1                 <<  2)  // C - Compressed extension
-    | (0                 <<  3)  // D - Double precision floating-point extension
-    | (32'(RV32E)        <<  4)  // E - RV32E base ISA
-    | (0                 <<  5)  // F - Single precision floating-point extension
-    | (32'(!RV32E)       <<  8)  // I - RV32I/64I/128I base ISA
-    | (RV32MEnabled      << 12)  // M - Integer Multiply/Divide extension
-    | (0                 << 13)  // N - User level interrupts supported
-    | (0                 << 18)  // S - Supervisor mode implemented
-    | (1                 << 20)  // U - User mode implemented
-    | (0                 << 23)  // X - Non-standard extensions present
-    | (32'(CSR_MISA_MXL) << 30); // M-XLEN
+      (0                    <<  0)  // A - Atomic Instructions extension
+    | (RV32BEnabled         <<  1)  // B - Bit-Manipulation extension
+    | (1                    <<  2)  // C - Compressed extension
+    | (0                    <<  3)  // D - Double precision floating-point extension
+    | (32'(RV32E)           <<  4)  // E - RV32E base ISA
+    | (0                    <<  5)  // F - Single precision floating-point extension
+    | (32'(!RV32E & !RV32T) <<  8)  // I - RV32I/64I/128I base ISA
+    | (RV32MEnabled         << 12)  // M - Integer Multiply/Divide extension
+    | (0                    << 13)  // N - User level interrupts supported
+    | (0                    << 18)  // S - Supervisor mode implemented
+    | (32'(RV32T)           << 19)  // T - RV32T (TISC, Trustworthy Instruction-Set Computer) 
+    | (1                    << 20)  // U - User mode implemented
+    | (0                    << 23)  // X - Non-standard extensions present
+    | (32'(CSR_MISA_MXL)    << 30); // M-XLEN
 
   typedef struct packed {
     logic      mie;

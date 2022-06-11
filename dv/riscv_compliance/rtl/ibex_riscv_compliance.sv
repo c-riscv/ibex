@@ -21,6 +21,7 @@ module ibex_riscv_compliance (
   parameter int unsigned MHPMCounterNum   = 0;
   parameter int unsigned MHPMCounterWidth = 40;
   parameter bit RV32E                     = 1'b0;
+  parameter bit RV32T                     = 1'b0;
   parameter ibex_pkg::rv32m_e RV32M       = ibex_pkg::RV32MFast;
   parameter ibex_pkg::rv32b_e RV32B       = ibex_pkg::RV32BNone;
   parameter ibex_pkg::regfile_e RegFile   = ibex_pkg::RegFileFF;
@@ -144,6 +145,7 @@ module ibex_riscv_compliance (
       .MHPMCounterNum   (MHPMCounterNum    ),
       .MHPMCounterWidth (MHPMCounterWidth  ),
       .RV32E            (RV32E             ),
+      .RV32T            (RV32T             ),
       .RV32M            (RV32M             ),
       .RV32B            (RV32B             ),
       .RegFile          (RegFile           ),

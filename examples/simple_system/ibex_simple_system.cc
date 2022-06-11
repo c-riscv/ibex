@@ -37,7 +37,7 @@ std::string SimpleSystem::GetIsaString() const {
   const Vibex_simple_system &top = _top;
   assert(top.ibex_simple_system);
 
-  std::string base = top.ibex_simple_system->RV32E ? "rv32e" : "rv32i";
+  std::string base = top.ibex_simple_system->RV32E ? "rv32e" : RV32T ? "rv32t" :"rv32i";
 
   std::string extensions;
   if (top.ibex_simple_system->RV32M)

@@ -9,6 +9,7 @@
 # (4 cycles for mulh), resulting in 2 stall cycles for mul (3 for mulh)
 small:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MFast"
   RV32B                    : "ibex_pkg::RV32BNone"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -29,6 +30,7 @@ small:
 # Configuration to match that used in the OpenTitan project
 opentitan:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BOTEarlGrey"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -55,6 +57,7 @@ opentitan:
 # maximum performance configuration.
 experimental-maxperf:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -75,6 +78,7 @@ experimental-maxperf:
 # experimental-maxperf config above plus PMP enabled with 16 regions.
 experimental-maxperf-pmp:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -95,6 +99,7 @@ experimental-maxperf-pmp:
 # experimental-maxperf-pmp config above with balanced bitmanip extension
 experimental-maxperf-pmp-bmbalanced:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BBalanced"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -115,6 +120,7 @@ experimental-maxperf-pmp-bmbalanced:
 # experimental-maxperf-pmp config above with full bitmanip extension
 experimental-maxperf-pmp-bmfull:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BFull"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -135,6 +141,7 @@ experimental-maxperf-pmp-bmfull:
 # experimental-maxperf-pmp-bmfull config above with icache enabled
 experimental-maxperf-pmp-bmfull-icache:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BFull"
   RegFile                  : "ibex_pkg::RegFileFF"
@@ -158,6 +165,7 @@ experimental-maxperf-pmp-bmfull-icache:
 # development.
 experimental-branch-predictor:
   RV32E                    : 0
+  RV32T                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
   RegFile                  : "ibex_pkg::RegFileFF"

@@ -57,6 +57,7 @@ module core_ibex_tb_top;
   parameter int unsigned MHPMCounterNum   = 0;
   parameter int unsigned MHPMCounterWidth = 40;
   parameter bit RV32E                     = 1'b0;
+  parameter bit RV32T                     = 1'b0;
   parameter ibex_pkg::rv32m_e RV32M       = `IBEX_CFG_RV32M;
   parameter ibex_pkg::rv32b_e RV32B       = `IBEX_CFG_RV32B;
   parameter ibex_pkg::regfile_e RegFile   = `IBEX_CFG_RegFile;
@@ -79,6 +80,7 @@ module core_ibex_tb_top;
     .MHPMCounterNum   (MHPMCounterNum   ),
     .MHPMCounterWidth (MHPMCounterWidth ),
     .RV32E            (RV32E            ),
+    .RV32T            (RV32T            ),
     .RV32M            (RV32M            ),
     .RV32B            (RV32B            ),
     .RegFile          (RegFile          ),
@@ -267,6 +269,7 @@ module core_ibex_tb_top;
 
     // Expose ISA config parameters to UVM DB
     uvm_config_db#(bit)::set(null, "*", "RV32E", RV32E);
+    uvm_config_db#(bit)::set(null, "*", "RV32T", RV32T);
     uvm_config_db#(ibex_pkg::rv32m_e)::set(null, "*", "RV32M", RV32M);
     uvm_config_db#(ibex_pkg::rv32b_e)::set(null, "*", "RV32B", RV32B);
 

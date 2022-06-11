@@ -7,6 +7,7 @@
  * Arithmetic logic unit
  */
 module ibex_alu #(
+  parameter bit               RV32T = 0,
   parameter ibex_pkg::rv32b_e RV32B = ibex_pkg::RV32BNone
 ) (
   input  ibex_pkg::alu_op_e operator_i,

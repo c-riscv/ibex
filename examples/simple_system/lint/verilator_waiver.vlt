@@ -36,5 +36,6 @@ lint_off -rule WIDTH -file "*/rtl/ibex_simple_system.sv"
 // out what flavour of core it is running, which allows us to call
 // Spike with the right ISA.
 public -module "ibex_simple_system" -var "RV32E"
+public -module "ibex_simple_system" -var "RV32T"
 public -module "ibex_simple_system" -var "RV32M"
 public -module "ibex_simple_system" -var "RV32B"

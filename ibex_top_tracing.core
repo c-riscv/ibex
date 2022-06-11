@@ -29,6 +29,11 @@ parameters:
     default: 0
     paramtype: vlogparam
 
+  RV32T:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+
   RV32M:
     datatype: str
     default: ibex_pkg::RV32MFast
@@ -139,6 +144,7 @@ targets:
       - RVFI=true
       - SYNTHESIS=true
       - RV32E
+      - RV32T
       - RV32M
       - RV32B
       - RegFile

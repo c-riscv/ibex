@@ -43,6 +43,7 @@ module ibex_simple_system (
   parameter int unsigned        MHPMCounterNum           = 0;
   parameter int unsigned        MHPMCounterWidth         = 40;
   parameter bit                 RV32E                    = 1'b0;
+  parameter bit                 RV32T                    = 1'b0;
   parameter ibex_pkg::rv32m_e   RV32M                    = `RV32M;
   parameter ibex_pkg::rv32b_e   RV32B                    = `RV32B;
   parameter ibex_pkg::regfile_e RegFile                  = `RegFile;
@@ -195,6 +196,7 @@ module ibex_simple_system (
       .MHPMCounterNum  ( MHPMCounterNum   ),
       .MHPMCounterWidth( MHPMCounterWidth ),
       .RV32E           ( RV32E            ),
+      .RV32T           ( RV32T            ),
       .RV32M           ( RV32M            ),
       .RV32B           ( RV32B            ),
       .RegFile         ( RegFile          ),

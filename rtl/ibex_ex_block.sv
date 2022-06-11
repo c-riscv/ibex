@@ -9,6 +9,7 @@
  * Execution block: Hosts ALU and MUL/DIV unit
  */
 module ibex_ex_block #(
+  parameter bit               RV32T           = 0,
   parameter ibex_pkg::rv32m_e RV32M           = ibex_pkg::RV32MFast,
   parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
   parameter bit               BranchTargetALU = 0
@@ -114,6 +115,7 @@ module ibex_ex_block #(
   /////////
 
   ibex_alu #(
+    .RV32T(RV32T)
     .RV32B(RV32B)
   ) alu_i (
     .operator_i         (alu_operator_i),
