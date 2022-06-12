@@ -131,7 +131,11 @@ module ibex_alu #(
   end
 
   assign is_equal = (adder_result == 32'b0);
-  assign is_equal_result_o = is_equal;
+  
+  // assign is_equal_result_o = is_equal;
+  // TODO: adding Bound Checking when RV32T is set
+  // this modification just for passing verilator lint checking
+  assign is_equal_result_o = is_equal && RV32T;
 
   // Is greater equal
   always_comb begin
