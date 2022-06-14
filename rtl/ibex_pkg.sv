@@ -350,7 +350,7 @@ package ibex_pkg;
 
   localparam exc_cause_t ExcCauseLoadAddrFault =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd16};
-  localparam exc_cause_t ExcCausePointerAddrFault =
+  localparam exc_cause_t ExcCauseArithAddrFault =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd17};
   localparam exc_cause_t ExcCauseStoreAddrFault =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd18};

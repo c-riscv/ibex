@@ -251,6 +251,11 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0] alu_adder_result_ex;    // Used to forward computed address to LSU
   logic [31:0] result_ex;
 
+  // Bound-Checking Contrl
+  logic        tag_load_addr_err_ex;
+  logic        tag_arith_addr_err_ex;
+  logic        tag_store_addr_err_ex;
+  
   // Multiplier Control
   logic        mult_en_ex;
   logic        div_en_ex;
@@ -579,6 +584,11 @@ module ibex_core import ibex_pkg::*; #(
     .illegal_csr_insn_i   (illegal_csr_insn_id),
     .data_ind_timing_i    (data_ind_timing),
 
+    // Bound Checking
+    .tag_load_addr_err_i (tag_load_addr_err_ex),
+    .tag_arith_addr_err_i (tag_arith_addr_err_ex),
+    .tag_store_addr_err_i (tag_store_addr_err_ex),
+
     // LSU
     .lsu_req_o     (lsu_req),  // to load store unit
     .lsu_we_o      (lsu_we),  // to load store unit
@@ -694,6 +704,10 @@ module ibex_core import ibex_pkg::*; #(
 
     .branch_target_o  (branch_target_ex),  // to IF
     .branch_decision_o(branch_decision),  // to ID
+
+    .tag_load_addr_err_o (tag_load_addr_err_ex),
+    .tag_arith_addr_err_o (tag_arith_addr_err_ex),
+    .tag_store_addr_err_o (tag_store_addr_err_ex),
 
     .ex_valid_o(ex_valid)
   );

@@ -55,6 +55,11 @@ module ibex_controller #(
   output ibex_pkg::exc_pc_sel_e exc_pc_mux_o,            // IF stage selector for exception PC
   output ibex_pkg::exc_cause_t  exc_cause_o,             // for IF stage, CSRs
 
+  // bound-checking related signals
+  input  logic                  load_addr_err_i,
+  input  logic                  arith_addr_err_i,
+  input  logic                  store_addr_err_i,
+
   // LSU
   input  logic [31:0]           lsu_addr_last_i,         // for mtval
   input  logic                  load_err_i,
@@ -127,6 +132,9 @@ module ibex_controller #(
   logic ebrk_insn_prio;
   logic store_err_prio;
   logic load_err_prio;
+  logic load_addr_err_prio;
+  logic arith_addr_err_prio;
+  logic store_addr_err_prio;
 
   logic stall;
   logic halt_if;
@@ -161,6 +169,11 @@ module ibex_controller #(
   logic ebrk_insn;
   logic csr_pipe_flush;
   logic instr_fetch_err;
+  
+  logic load_addr_err;
+  logic store_addr_err;
+  logic arith_addr_err;
+  logic addr_err;
 
 `ifndef SYNTHESIS
   // synopsys translate_off
@@ -191,6 +204,11 @@ module ibex_controller #(
   assign ebrk_insn       = ebrk_insn_i       & instr_valid_i;
   assign csr_pipe_flush  = csr_pipe_flush_i  & instr_valid_i;
   assign instr_fetch_err = instr_fetch_err_i & instr_valid_i;
+  
+  assign load_addr_err   = load_addr_err_i   & instr_valid_i;
+  assign store_addr_err  = store_addr_err_i  & instr_valid_i;
+  assign arith_addr_err  = arith_addr_err_i  & instr_valid_i;
+  assign addr_err        = load_addr_err | arith_addr_err | store_addr_err; 
 
   // This is recorded in the illegal_insn_q flop to help timing.  Specifically
   // it is needed to break the path from ibex_cs_registers/illegal_csr_insn_o
@@ -206,8 +224,9 @@ module ibex_controller #(
   // the FLUSH state so the cycle following exc_req_q won't remain set for an
   // exception request that has just been handled.
   // All terms in this expression are qualified by instr_valid_i
-  assign exc_req_d = (ecall_insn | ebrk_insn | illegal_insn_d | instr_fetch_err) &
-                     (ctrl_fsm_cs != FLUSH);
+  assign exc_req_d = (ecall_insn | ebrk_insn | illegal_insn_d | instr_fetch_err 
+                                 | addr_err
+                     ) & (ctrl_fsm_cs != FLUSH);
 
   // LSU exception requests
   assign exc_req_lsu = store_err_i | load_err_i;
@@ -238,6 +257,9 @@ module ibex_controller #(
       illegal_insn_prio    = 0;
       ecall_insn_prio      = 0;
       ebrk_insn_prio       = 0;
+      store_addr_err_prio  = 0;
+      arith_addr_err_prio  = 0;
+      load_addr_err_prio   = 0;
       store_err_prio       = 0;
       load_err_prio        = 0;
 
@@ -256,6 +278,12 @@ module ibex_controller #(
         ecall_insn_prio = 1'b1;
       end else if (ebrk_insn) begin
         ebrk_insn_prio = 1'b1;
+      end else if (store_addr_err_i) begin
+        store_addr_err_prio = 1'b1;
+      end else if (arith_addr_err_i) begin
+          arith_addr_err_prio = 1'b1;
+      end else if (load_addr_err_i) begin
+        load_addr_err_prio = 1'b1;
       end
     end
 
@@ -267,6 +295,9 @@ module ibex_controller #(
       illegal_insn_prio    = 0;
       ecall_insn_prio      = 0;
       ebrk_insn_prio       = 0;
+      store_addr_err_prio  = 0;
+      arith_addr_err_prio  = 0;
+      load_addr_err_prio   = 0;
       store_err_prio       = 0;
       load_err_prio        = 0;
 
@@ -278,6 +309,12 @@ module ibex_controller #(
         ecall_insn_prio = 1'b1;
       end else if (ebrk_insn) begin
         ebrk_insn_prio = 1'b1;
+      end else if (store_addr_err) begin
+        store_addr_err_prio = 1'b1;
+      end else if (arith_addr_err) begin
+        arith_addr_err_prio = 1'b1;
+      end else if (load_addr_err) begin
+        load_addr_err_prio = 1'b1;
       end else if (store_err_q) begin
         store_err_prio = 1'b1;
       end else if (load_err_q) begin
@@ -292,6 +329,9 @@ module ibex_controller #(
                       illegal_insn_prio,
                       ecall_insn_prio,
                       ebrk_insn_prio,
+                      store_addr_err_prio,
+                      arith_addr_err_prio,
+                      load_addr_err_prio,
                       store_err_prio,
                       load_err_prio}),
              (ctrl_fsm_cs == FLUSH) & exc_req_q)
@@ -776,6 +816,18 @@ module ibex_controller #(
                  */
                 exc_cause_o      = ExcCauseBreakpoint;
               end
+            end
+            store_addr_err_prio: begin
+              exc_cause_o = ExcCauseStoreAddrFault;
+              csr_mtval_o = lsu_addr_last_i;
+            end
+            arith_addr_err_prio: begin
+              exc_cause_o = ExcCauseArithAddrFault;
+              csr_mtval_o = lsu_addr_last_i;
+            end
+            load_addr_err_prio: begin
+              exc_cause_o = ExcCauseLoadAddrFault;
+              csr_mtval_o = lsu_addr_last_i;
             end
             store_err_prio: begin
               exc_cause_o = ExcCauseStoreAccessFault;
