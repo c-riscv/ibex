@@ -78,6 +78,8 @@ package ibex_pkg;
     // Arithmetics
     ALU_ADD,
     ALU_SUB,
+    // RV32T
+    ALU_SUBP,
 
     // Logics
     ALU_XOR,
@@ -110,6 +112,9 @@ package ibex_pkg;
     ALU_SH1ADD,
     ALU_SH2ADD,
     ALU_SH3ADD,
+    // RV32T
+    ALU_INCP,
+    ALU_DECP,
 
     // Comparisons
     ALU_LT,
@@ -129,11 +134,16 @@ package ibex_pkg;
     ALU_PACK,
     ALU_PACKU,
     ALU_PACKH,
+    // RV32T
+    ALU_CVTIP,
+    ALU_SETTAG,
 
     // Sign-Extend
     // RV32B
     ALU_SEXTB,
     ALU_SEXTH,
+    // RV32T
+    ALU_CVTPI,
 
     // Bitcounting
     // RV32B
@@ -144,6 +154,8 @@ package ibex_pkg;
     // Set lower than
     ALU_SLT,
     ALU_SLTU,
+    // RV32T
+    ALU_SLTUP,
 
     // Ternary Bitmanip Operations
     // RV32B
@@ -450,6 +462,28 @@ package ibex_pkg;
     CSR_MTVAL     = 12'h343,
     CSR_MIP       = 12'h344,
 
+    // Bound checking protection
+    CSR_BCPCFG0   = 12'hBA0,
+    CSR_BCPCFG1   = 12'hBA1,
+    CSR_BCPCFG2   = 12'hBA2,
+    CSR_BCPCFG3   = 12'hBA3,
+    CSR_BCPADDR0  = 12'hBB0,
+    CSR_BCPADDR1  = 12'hBB1,
+    CSR_BCPADDR2  = 12'hBB2,
+    CSR_BCPADDR3  = 12'hBB3,
+    CSR_BCPADDR4  = 12'hBB4,
+    CSR_BCPADDR5  = 12'hBB5,
+    CSR_BCPADDR6  = 12'hBB6,
+    CSR_BCPADDR7  = 12'hBB7,
+    CSR_BCPADDR8  = 12'hBB8,
+    CSR_BCPADDR9  = 12'hBB9,
+    CSR_BCPADDR10 = 12'hBBA,
+    CSR_BCPADDR11 = 12'hBBB,
+    CSR_BCPADDR12 = 12'hBBC,
+    CSR_BCPADDR13 = 12'hBBD,
+    CSR_BCPADDR14 = 12'hBBE,
+    CSR_BCPADDR15 = 12'hBBF,
+    
     // Physical memory protection
     CSR_PMPCFG0   = 12'h3A0,
     CSR_PMPCFG1   = 12'h3A1,
