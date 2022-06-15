@@ -600,6 +600,8 @@ module ibex_decoder #(
           default: begin
             illegal_insn       = 1'b1;
           end
+          3'b110: illegal_insn = RV32T ? 1'b0 : 1'b1; //packti setagi
+          3'b111: illegal_insn = RV32T ? 1'b0 : 1'b1; //incpi 
         endcase
       end
 
