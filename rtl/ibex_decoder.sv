@@ -15,6 +15,7 @@
 
 module ibex_decoder #(
   parameter bit RV32E               = 0,
+  parameter bit RV32T               = 0,
   parameter ibex_pkg::rv32m_e RV32M = ibex_pkg::RV32MFast,
   parameter ibex_pkg::rv32b_e RV32B = ibex_pkg::RV32BNone,
   parameter bit BranchTargetALU     = 0
@@ -377,11 +378,15 @@ module ibex_decoder #(
               end
               5'b0_1100: begin
                 unique case(instr[26:20])
+                  // RV32B
                   7'b000_0000,                                                         // clz
                   7'b000_0001,                                                         // ctz
                   7'b000_0010,                                                         // cpop
                   7'b000_0100,                                                         // sext.b
                   7'b000_0101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;      // sext.h
+                  // RV32T
+                  7'b000_0111: illegal_insn = RV32T ? 1'b0 : 1'b1;                     // sext.t cvt.p.i
+                  // RV32B
                   7'b001_0000,                                                         // crc32.b
                   7'b001_0001,                                                         // crc32.h
                   7'b001_0010,                                                         // crc32.w
@@ -490,6 +495,16 @@ module ibex_decoder #(
             {7'b010_0100, 3'b101}, // bext
             // RV32B zbf
             {7'b010_0100, 3'b111}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bfp
+
+            // RV32T zta
+            {7'b011_0000, 3'b000}, // subp
+            {7'b001_0000, 3'b011}, // sltup
+            {7'b001_0000, 3'b111}, // incp
+            {7'b011_0000, 3'b111}, // decp
+            // RV32T ztb
+            {7'b001_0100, 3'b111}, // packt setag
+            {7'b011_0100, 3'b111} : illegal_insn = RV32T ? 1'b0 : 1'b1; // packi cvt.i.p
+
             // RV32B zbp
             {7'b011_0100, 3'b101}, // grev
             {7'b001_0100, 3'b101}, // gorc
@@ -829,6 +844,17 @@ module ibex_decoder #(
           3'b111: alu_operator_o = ALU_AND;  // And with Immediate
 
           3'b001: begin
+            if (RV32T) begin
+              unique case (instr_alu[31:27])
+                5'b0_1100: begin
+                  unique case (instr_alu[26:20])
+                    7'b000_0111: alu_operator_o = ALU_CVTPI; //sext.t
+                    default:;
+                  endcase
+                end
+              default:;
+              endcase
+            end
             if (RV32B != RV32BNone) begin
               unique case (instr_alu[31:27])
                 5'b0_0000: alu_operator_o = ALU_SLL;    // Shift Left Logical by Immediate
@@ -1044,6 +1070,15 @@ module ibex_decoder #(
             // RV32B zbf
             {7'b010_0100, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_BFP;
 
+            // RV32T zta
+            {7'b011_0000, 3'b000}: if (RV32T) alu_operator_o = ALU_SUBP;  // subp
+            {7'b001_0000, 3'b011}: if (RV32T) alu_operator_o = ALU_SLTUP; // sltup
+            {7'b001_0000, 3'b111}: if (RV32T) alu_operator_o = ALU_INCP;  // incp
+            {7'b011_0000, 3'b111}: if (RV32T) alu_operator_o = ALU_DECP;  // decp
+            // RV32T ztb
+            {7'b001_0100, 3'b111}: if (RV32T) alu_operator_o = ALU_SETAG; // packt setag
+            {7'b011_0100, 3'b111}: if (RV32T) alu_operator_o = ALU_CVTIP; // packi cvt.i.p
+
             // RV32B zbp
             {7'b011_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_GREV;
             {7'b001_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_GORC;
@@ -1156,6 +1191,16 @@ module ibex_decoder #(
               imm_b_mux_sel_o    = IMM_B_INCR_PC;
               alu_operator_o     = ALU_ADD;
             end
+          end
+          3'b110: begin
+            alu_operator_o     = ALU_SETAG; // packti
+            alu_op_a_mux_sel_o = OP_A_REG_A;
+            alu_op_b_mux_sel_o = OP_B_IMM;
+          end
+          3'b111: begin
+            alu_operator_o     = ALU_INCP;  // incpi
+            alu_op_a_mux_sel_o = OP_A_REG_A;
+            alu_op_b_mux_sel_o = OP_B_IMM;
           end
           default: ;
         endcase

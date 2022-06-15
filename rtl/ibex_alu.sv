@@ -50,14 +50,20 @@ module ibex_alu #(
   logic        adder_op_a_shift2;
   logic        adder_op_a_shift3;
   logic        adder_op_b_negate;
+  logic        adder_op_a_tagcut;
+  logic        adder_op_b_tagcut;
   logic [32:0] adder_in_a, adder_in_b;
   logic [31:0] adder_result;
+
 
   always_comb begin
     adder_op_a_shift1 = 1'b0;
     adder_op_a_shift2 = 1'b0;
     adder_op_a_shift3 = 1'b0;
     adder_op_b_negate = 1'b0;
+    adder_op_a_tagcut = 1'b0;
+    adder_op_b_tagcut = 1'b0;
+
     unique case (operator_i)
       // Adder OPs
       ALU_SUB,
@@ -77,6 +83,11 @@ module ibex_alu #(
       ALU_SH2ADD: if (RV32B != RV32BNone) adder_op_a_shift2 = 1'b1;
       ALU_SH3ADD: if (RV32B != RV32BNone) adder_op_a_shift3 = 1'b1;
 
+      ALU_SUBP,
+      ALU_SLTUP : if (RV32T) begin 
+        adder_op_a_tagcut = 1'b1;
+        adder_op_b_tagcut = 1'b1;
+      end
       default:;
     endcase
   end
@@ -88,6 +99,7 @@ module ibex_alu #(
       adder_op_a_shift1: adder_in_a = {operand_a_i[30:0],2'b01};
       adder_op_a_shift2: adder_in_a = {operand_a_i[29:0],3'b001};
       adder_op_a_shift3: adder_in_a = {operand_a_i[28:0],4'b0001};
+      adder_op_a_tagcut: adder_in_a = { {8{1'b0}}, operand_a_i[23:0], 1'b1};
       default:           adder_in_a = {operand_a_i,1'b1};
     endcase
   end
@@ -98,6 +110,7 @@ module ibex_alu #(
     unique case (1'b1)
       multdiv_sel_i:     adder_in_b = multdiv_operand_b_i;
       adder_op_b_negate: adder_in_b = operand_b_neg;
+      adder_op_b_tagcut: adder_in_b = { {8{1'b0}}, operand_a_i[23:0], 1'b0};
       default:           adder_in_b = {operand_b_i, 1'b0};
     endcase
   end
@@ -562,13 +575,20 @@ module ibex_alu #(
 
     logic packu;
     logic packh;
+    logic packt;
+    logic packi;
+    
     assign packu = operator_i == ALU_PACKU;
     assign packh = operator_i == ALU_PACKH;
+    assign packt = operator_i == ALU_CVTIP;
+    assign packi = operator_i == ALU_SETAG;
 
     always_comb begin
       unique case (1'b1)
         packu:   pack_result = {operand_b_i[31:16], operand_a_i[31:16]};
         packh:   pack_result = {16'h0, operand_b_i[7:0], operand_a_i[7:0]};
+        packi:   pack_result = {operand_a_i[31:24], operand_b_i[23:0]};
+        packt:   pack_result = {operand_b_i[7:0], operand_a_i[23:0]};
         default: pack_result = {operand_b_i[15:0], operand_a_i[15:0]};
       endcase
     end
@@ -577,7 +597,8 @@ module ibex_alu #(
     // Sext //
     //////////
 
-    assign sext_result = (operator_i == ALU_SEXTB) ?
+    assign sext_result = (operator_i == ALU_CVTPI) ? 
+        { {8{operand_a_i[23]}} , operand_a_i[23:0]} : (operator_i == ALU_SEXTB) ?
         { {24{operand_a_i[7]}}, operand_a_i[7:0]} : { {16{operand_a_i[15]}}, operand_a_i[15:0]};
 
     /////////////////////////////

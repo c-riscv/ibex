@@ -498,6 +498,7 @@ module ibex_core import ibex_pkg::*; #(
 
   ibex_id_stage #(
     .RV32E          (RV32E),
+    .RV32T          (RV32T),
     .RV32M          (RV32M),
     .RV32B          (RV32B),
     .BranchTargetALU(BranchTargetALU),

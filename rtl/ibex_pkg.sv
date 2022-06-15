@@ -136,7 +136,7 @@ package ibex_pkg;
     ALU_PACKH,
     // RV32T
     ALU_CVTIP,
-    ALU_SETTAG,
+    ALU_SETAG,
 
     // Sign-Extend
     // RV32B
