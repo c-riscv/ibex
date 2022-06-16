@@ -435,10 +435,40 @@ package ibex_pkg;
 
   // Machine Security Configuration (ePMP)
   typedef struct packed {
-    logic rlb;  // Rule Locking Bypass
-    logic mmwp; // Machine Mode Whitelist Policy
-    logic mml;  // Machine Mode Lockdown
+    logic [1:0] pob;  // pointer out-bound operations
+    logic [1:0] aob;  // address out-bound operations
+    logic       rlb;  // Rule Locking Bypass
+    logic       mmwp; // Machine Mode Whitelist Policy
+    logic       mml;  // Machine Mode Lockdown
   } pmp_mseccfg_t;
+
+  // BCP constants
+  parameter int unsigned BCP_MAX_REGIONS      = 16;
+  parameter int unsigned BCP_CFG_W            = 8;
+
+  // BCP acces type
+  parameter int unsigned BCP_I  = 0;
+  parameter int unsigned BCP_I2 = 1;
+  parameter int unsigned BCP_D  = 2;
+
+  typedef enum logic [1:0] {
+    BCP_ACC_EXEC    = 2'b00,
+    BCP_ACC_WRITE   = 2'b01,
+    BCP_ACC_READ    = 2'b10
+  } bcp_req_e;
+
+  // BCP cfg structures
+  typedef enum logic [1:0] {
+    BCP_MODE_OFF   = 2'b00,
+    BCP_MODE_TOR   = 2'b01,  // top and bottom bound
+    BCP_MODE_OOR   = 2'b10,  // top and offset bound
+    BCP_MODE_NAPOT = 2'b11
+  } bcp_cfg_mode_e;
+
+  typedef struct packed {
+    logic          lock;
+    bcp_cfg_mode_e mode;
+  } bcp_cfg_t;
 
   // CSRs
   typedef enum logic[11:0] {
@@ -627,6 +657,10 @@ package ibex_pkg;
   parameter logic [11:0] CSR_OFF_PMP_CFG  = 12'h3A0; // pmp_cfg  @ 12'h3a0 - 12'h3a3
   parameter logic [11:0] CSR_OFF_PMP_ADDR = 12'h3B0; // pmp_addr @ 12'h3b0 - 12'h3bf
 
+  // CSR bcp-related offsets
+  parameter logic [11:0] CSR_OFF_BCP_CFG  = 12'hBA0; // bcp_cfg  @ 12'hba0 - 12'hba3
+  parameter logic [11:0] CSR_OFF_BCP_ADDR = 12'hBB0; // bcp_addr @ 12'hbb0 = 12'hbbf
+
   // CSR status bits
   parameter int unsigned CSR_MSTATUS_MIE_BIT      = 3;
   parameter int unsigned CSR_MSTATUS_MPIE_BIT     = 7;
@@ -646,9 +680,13 @@ package ibex_pkg;
   parameter int unsigned CSR_MFIX_BIT_HIGH = 30;
 
   // CSR Machine Security Configuration bits
-  parameter int unsigned CSR_MSECCFG_MML_BIT  = 0;
-  parameter int unsigned CSR_MSECCFG_MMWP_BIT = 1;
-  parameter int unsigned CSR_MSECCFG_RLB_BIT  = 2;
+  parameter int unsigned CSR_MSECCFG_MML_BIT      = 0;
+  parameter int unsigned CSR_MSECCFG_MMWP_BIT     = 1;
+  parameter int unsigned CSR_MSECCFG_RLB_BIT      = 2;
+  parameter int unsigned CSR_MSECCFG_AOB_BIT_LOW  = 16;
+  parameter int unsigned CSR_MSECCFG_AOB_BIT_HIGH = 17;
+  parameter int unsigned CSR_MSECCFG_POB_BIT_LOW  = 18;
+  parameter int unsigned CSR_MSECCFG_POB_BIT_HIGH = 19;
 
   // Vendor ID
   // No JEDEC ID has been allocated to lowRISC so the value is 0 to indicate the field is not
