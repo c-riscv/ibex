@@ -433,10 +433,14 @@ package ibex_pkg;
     logic          read;
   } pmp_cfg_t;
 
-  // Machine Security Configuration (ePMP)
+  // Machine Security Configuration (eBCP)
   typedef struct packed {
     logic [1:0] pob;  // pointer out-bound operations
     logic [1:0] aob;  // address out-bound operations
+  } bcp_mseccfg_t;
+
+  // Machine Security Configuration (ePMP)
+  typedef struct packed {
     logic       rlb;  // Rule Locking Bypass
     logic       mmwp; // Machine Mode Whitelist Policy
     logic       mml;  // Machine Mode Lockdown
@@ -493,26 +497,26 @@ package ibex_pkg;
     CSR_MIP       = 12'h344,
 
     // Bound checking protection
-    CSR_BCPCFG0   = 12'hBA0,
-    CSR_BCPCFG1   = 12'hBA1,
-    CSR_BCPCFG2   = 12'hBA2,
-    CSR_BCPCFG3   = 12'hBA3,
-    CSR_BCPADDR0  = 12'hBB0,
-    CSR_BCPADDR1  = 12'hBB1,
-    CSR_BCPADDR2  = 12'hBB2,
-    CSR_BCPADDR3  = 12'hBB3,
-    CSR_BCPADDR4  = 12'hBB4,
-    CSR_BCPADDR5  = 12'hBB5,
-    CSR_BCPADDR6  = 12'hBB6,
-    CSR_BCPADDR7  = 12'hBB7,
-    CSR_BCPADDR8  = 12'hBB8,
-    CSR_BCPADDR9  = 12'hBB9,
-    CSR_BCPADDR10 = 12'hBBA,
-    CSR_BCPADDR11 = 12'hBBB,
-    CSR_BCPADDR12 = 12'hBBC,
-    CSR_BCPADDR13 = 12'hBBD,
-    CSR_BCPADDR14 = 12'hBBE,
-    CSR_BCPADDR15 = 12'hBBF,
+    CSR_BCPCFG0   = 12'h450,
+    CSR_BCPCFG1   = 12'h451,
+    CSR_BCPCFG2   = 12'h452,
+    CSR_BCPCFG3   = 12'h453,
+    CSR_BCPADDR0  = 12'h460,
+    CSR_BCPADDR1  = 12'h461,
+    CSR_BCPADDR2  = 12'h462,
+    CSR_BCPADDR3  = 12'h463,
+    CSR_BCPADDR4  = 12'h464,
+    CSR_BCPADDR5  = 12'h465,
+    CSR_BCPADDR6  = 12'h466,
+    CSR_BCPADDR7  = 12'h467,
+    CSR_BCPADDR8  = 12'h468,
+    CSR_BCPADDR9  = 12'h469,
+    CSR_BCPADDR10 = 12'h46A,
+    CSR_BCPADDR11 = 12'h46B,
+    CSR_BCPADDR12 = 12'h46C,
+    CSR_BCPADDR13 = 12'h46D,
+    CSR_BCPADDR14 = 12'h46E,
+    CSR_BCPADDR15 = 12'h46F,
     
     // Physical memory protection
     CSR_PMPCFG0   = 12'h3A0,
