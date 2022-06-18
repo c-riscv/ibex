@@ -455,12 +455,6 @@ package ibex_pkg;
   parameter int unsigned BCP_I2 = 1;
   parameter int unsigned BCP_D  = 2;
 
-  typedef enum logic [1:0] {
-    BCP_ACC_EXEC    = 2'b00,
-    BCP_ACC_WRITE   = 2'b01,
-    BCP_ACC_READ    = 2'b10
-  } bcp_req_e;
-
   // BCP cfg structures
   typedef enum logic [1:0] {
     BCP_MODE_OFF   = 2'b00,
@@ -470,9 +464,8 @@ package ibex_pkg;
   } bcp_cfg_mode_e;
 
   typedef struct packed {
-    logic          lock;
     bcp_cfg_mode_e mode;
-  } bcp_cfg_t;
+  } bcp_mseccfg_t;
 
   // CSRs
   typedef enum logic[11:0] {
@@ -662,8 +655,8 @@ package ibex_pkg;
   parameter logic [11:0] CSR_OFF_PMP_ADDR = 12'h3B0; // pmp_addr @ 12'h3b0 - 12'h3bf
 
   // CSR bcp-related offsets
-  parameter logic [11:0] CSR_OFF_BCP_CFG  = 12'hBA0; // bcp_cfg  @ 12'hba0 - 12'hba3
-  parameter logic [11:0] CSR_OFF_BCP_ADDR = 12'hBB0; // bcp_addr @ 12'hbb0 = 12'hbbf
+  parameter logic [11:0] CSR_OFF_BCP_CFG  = 12'h450; // bcp_cfg  @ 12'h450 - 12'h453
+  parameter logic [11:0] CSR_OFF_BCP_ADDR = 12'h460; // bcp_addr @ 12'h460 = 12'h46f
 
   // CSR status bits
   parameter int unsigned CSR_MSTATUS_MIE_BIT      = 3;

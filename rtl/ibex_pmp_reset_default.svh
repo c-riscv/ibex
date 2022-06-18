@@ -51,3 +51,44 @@ localparam [33:0] pmp_addr_rst[16] = '{
 };
 
 localparam pmp_mseccfg_t pmp_mseccfg_rst = '{rlb : 1'b0, mmwp: 1'b0, mml: 1'b0};
+
+// Bound Check Protection Reset Default Value
+localparam bcp_cfg_t bcp_cfg_rst[16] = '{
+  '{mode: BCP_MODE_TOR}, // region 0
+  '{mode: BCP_MODE_TOR}, // region 1
+  '{mode: BCP_MODE_TOR}, // region 2
+  '{mode: BCP_MODE_TOR}, // region 3
+  '{mode: BCP_MODE_TOR}, // region 4
+  '{mode: BCP_MODE_TOR}, // region 5
+  '{mode: BCP_MODE_TOR}, // region 6
+  '{mode: BCP_MODE_TOR}, // region 7
+  '{mode: BCP_MODE_TOR}, // region 8
+  '{mode: BCP_MODE_TOR}, // region 9
+  '{mode: BCP_MODE_TOR}, // region 10
+  '{mode: BCP_MODE_TOR}, // region 11
+  '{mode: BCP_MODE_TOR}, // region 12
+  '{mode: BCP_MODE_TOR}, // region 13
+  '{mode: BCP_MODE_TOR}, // region 14
+  '{mode: BCP_MODE_TOR}, // region 15
+};
+
+localparam [33:0] bcp_addr_rst[16] = '{
+  32'h0, // region 0
+  32'h0, // region 1
+  32'h0, // region 2
+  32'h0, // region 3
+  32'h0, // region 4
+  32'h0, // region 5
+  32'h0, // region 6
+  32'h0, // region 7
+  32'h0, // region 8
+  32'h0, // region 9
+  32'h0, // region 10
+  32'h0, // region 11
+  32'h0, // region 12
+  32'h0, // region 13
+  32'h0, // region 14
+  32'h0  // region 15
+};
+
+localparam bcp_mseccfg_t bcp_mseccfg_rst = '{pob: 2'b0, aob: 2'b0};

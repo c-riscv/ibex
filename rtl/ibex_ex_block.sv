@@ -51,9 +51,14 @@ module ibex_ex_block #(
   output logic [31:0]           branch_target_o,       // to IF
   output logic                  branch_decision_o,     // to ID
 
-  output logic                  tag_load_addr_err_o,    // to ID
-  output logic                  tag_arith_addr_err_o,   // to ID
-  output logic                  tag_store_addr_err_o,   // to ID
+  // BCP signals
+  input  logic [31:0]           csr_bcp_addr_i [BCPNumRegions];
+  input  bcp_cfg_t              csr_bcp_cfg_i  [BCPNumRegions];
+  input  bcp_mseccfg_t          csr_bcp_mseccfg_i;
+  
+  output logic                  bcp_load_addr_err_o,    // to ID
+  output logic                  bcp_arith_addr_err_o,   // to ID
+  output logic                  bcp_store_addr_err_o,   // to ID
 
   output logic                  ex_valid_o             // EX has valid output
 
@@ -206,7 +211,7 @@ module ibex_ex_block #(
   ////////////////////
   // Bound-Checking //
   ////////////////////
-  assign tag_load_addr_err_o  = 0;
-  assign tag_arith_addr_err_o = 0;
-  assign tag_store_addr_err_o = 0;
+  assign bcp_load_addr_err_o  = 0;
+  assign bcp_arith_addr_err_o = 0;
+  assign bcp_store_addr_err_o = 0;
 endmodule

@@ -17,6 +17,8 @@ module ibex_core import ibex_pkg::*; #(
   parameter bit          PMPEnable         = 1'b0,
   parameter int unsigned PMPGranularity    = 0,
   parameter int unsigned PMPNumRegions     = 4,
+  parameter bit          BCPEnable         = 1'b0,
+  parameter int unsigned BCPNumRegions     = 4,
   parameter int unsigned MHPMCounterNum    = 0,
   parameter int unsigned MHPMCounterWidth  = 40,
   parameter bit          RV32E             = 1'b0,
@@ -252,9 +254,9 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0] result_ex;
 
   // Bound-Checking Contrl
-  logic        tag_load_addr_err_ex;
-  logic        tag_arith_addr_err_ex;
-  logic        tag_store_addr_err_ex;
+  logic        bcp_load_addr_err_ex;
+  logic        bcp_arith_addr_err_ex;
+  logic        bcp_store_addr_err_ex;
   
   // Multiplier Control
   logic        mult_en_ex;
@@ -310,6 +312,11 @@ module ibex_core import ibex_pkg::*; #(
   irqs_t       irqs;
   logic        csr_mstatus_mie;
   logic [31:0] csr_mepc, csr_depc;
+
+  // BCP signals
+  logic [31:0]  csr_bcp_addr [BCPNumRegions];
+  bcp_cfg_t     csr_bcp_cfg  [BCPNumRegions];
+  bcp_mseccfg_t csr_bcp_mseccfg;
 
   // PMP signals
   logic [33:0]  csr_pmp_addr [PMPNumRegions];
@@ -586,9 +593,9 @@ module ibex_core import ibex_pkg::*; #(
     .data_ind_timing_i    (data_ind_timing),
 
     // Bound Checking
-    .tag_load_addr_err_i (tag_load_addr_err_ex),
-    .tag_arith_addr_err_i (tag_arith_addr_err_ex),
-    .tag_store_addr_err_i (tag_store_addr_err_ex),
+    .bcp_load_addr_err_i (bcp_load_addr_err_ex),
+    .bcp_arith_addr_err_i (bcp_arith_addr_err_ex),
+    .bcp_store_addr_err_i (bcp_store_addr_err_ex),
 
     // LSU
     .lsu_req_o     (lsu_req),  // to load store unit
@@ -706,9 +713,14 @@ module ibex_core import ibex_pkg::*; #(
     .branch_target_o  (branch_target_ex),  // to IF
     .branch_decision_o(branch_decision),  // to ID
 
-    .tag_load_addr_err_o (tag_load_addr_err_ex),
-    .tag_arith_addr_err_o (tag_arith_addr_err_ex),
-    .tag_store_addr_err_o (tag_store_addr_err_ex),
+    // BCP
+    .csr_bcp_cfg_i    (csr_bcp_cfg),
+    .csr_bcp_addr_i   (csr_bcp_addr),
+    .csr_bcp_mseccfg_i(csr_bcp_mseccfg),
+
+    .bcp_load_addr_err_o  (bcp_load_addr_err_ex),
+    .bcp_arith_addr_err_o (bcp_arith_addr_err_ex),
+    .bcp_store_addr_err_o (bcp_store_addr_err_ex),
 
     .ex_valid_o(ex_valid)
   );
@@ -958,6 +970,8 @@ module ibex_core import ibex_pkg::*; #(
     .PMPEnable        (PMPEnable),
     .PMPGranularity   (PMPGranularity),
     .PMPNumRegions    (PMPNumRegions),
+    .BCPEnable        (BCPEnable),
+    .BCPNumRegions    (BCPNumRegions),
     .RV32E            (RV32E),
     .RV32T            (RV32T),
     .RV32M            (RV32M),
@@ -1000,6 +1014,11 @@ module ibex_core import ibex_pkg::*; #(
     .csr_pmp_cfg_o    (csr_pmp_cfg),
     .csr_pmp_addr_o   (csr_pmp_addr),
     .csr_pmp_mseccfg_o(csr_pmp_mseccfg),
+
+    // BCP
+    .csr_bcp_cfg_o    (csr_bcp_cfg),
+    .csr_bcp_addr_o   (csr_bcp_addr),
+    .csr_bcp_mseccfg_o(csr_bcp_mseccfg),
 
     // debug
     .csr_depc_o         (csr_depc),

@@ -24,6 +24,8 @@ module ibex_cs_registers #(
   parameter bit               PMPEnable         = 0,
   parameter int unsigned      PMPGranularity    = 0,
   parameter int unsigned      PMPNumRegions     = 4,
+  parameter bit               BCPEnable         = 0,
+  parameter int unsigned      BCPNumRegions     = 4,
   parameter bit               RV32E             = 0,
   parameter bit               RV32T             = 0,
   parameter ibex_pkg::rv32m_e RV32M             = ibex_pkg::RV32MFast,
@@ -69,6 +71,11 @@ module ibex_cs_registers #(
   output ibex_pkg::pmp_cfg_t     csr_pmp_cfg_o  [PMPNumRegions],
   output logic [33:0]            csr_pmp_addr_o [PMPNumRegions],
   output ibex_pkg::pmp_mseccfg_t csr_pmp_mseccfg_o,
+
+  // BCP
+  output ibex_pkg::bcp_cfg_t     csr_bcp_cfg_o  [BCPNumRegions],
+  output logic [31:0]            csr_bcp_addr_o [BCPNumRegions],
+  output ibex_pkg::bcp_mseccfg_t csr_bcp_mseccfg_o, 
 
   // debug
   input  logic                 debug_mode_i,
@@ -127,7 +134,7 @@ module ibex_cs_registers #(
   localparam int unsigned RV32BEnabled = (RV32B == RV32BNone) ? 0 : 1;
   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
   localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? 33 - PMPGranularity : 32;
-
+  localparam int unsigned BCPAddrWidth = 32;
   // misa
   localparam logic [31:0] MISA_VALUE =
       (0                     <<  0)  // A - Atomic Instructions extension
@@ -228,6 +235,12 @@ module ibex_cs_registers #(
   logic [PMP_CFG_W-1:0]        pmp_cfg_rdata   [PMP_MAX_REGIONS];
   logic                        pmp_csr_err;
   pmp_mseccfg_t                pmp_mseccfg;
+
+  // BCP Signals
+  logic [31:0]                 bcp_addr_rdata  [BCP_MAX_REGIONS];
+  logic [PMP_CFG_W-1:0]        bcp_cfg_rdata   [BCP_MAX_REGIONS];
+  logic                        bcp_csr_err;
+  bcp_mseccfg_t                bcp_mseccfg;
 
   // Hardware performance monitor signals
   logic [31:0]                 mcountinhibit;
@@ -369,13 +382,20 @@ module ibex_cs_registers #(
       end
 
       CSR_MSECCFG: begin
+        csr_rdata_int                       = '0;
+        illegal_csr = 1'b1;
+        
         if (PMPEnable) begin
-          csr_rdata_int                       = '0;
           csr_rdata_int[CSR_MSECCFG_MML_BIT]  = pmp_mseccfg.mml;
           csr_rdata_int[CSR_MSECCFG_MMWP_BIT] = pmp_mseccfg.mmwp;
           csr_rdata_int[CSR_MSECCFG_RLB_BIT]  = pmp_mseccfg.rlb;
-        end else begin
-          illegal_csr = 1'b1;
+          illegal_csr = 1'b0;
+        end
+
+        if (BCPEnable) begin
+          csr_rdata_int[CSR_MSECCFG_POB_BIT_HIGH : CSR_MSECCFG_POB_BIT_LOW] = bcp_mseccfg.pob;
+          csr_rdata_int[CSR_MSECCFG_AOB_BIT_HIGH : CSR_MSECCFG_AOB_BIT_LOW] = bcp_mseccfg.aob;
+          illegal_csr = 1'b0;
         end
       end
 
@@ -1018,17 +1038,18 @@ module ibex_cs_registers #(
     .rd_error_o()
   );
 
+  // PMP and BCP reset values
+  `ifdef IBEX_CUSTOM_PMP_RESET_VALUES
+    `include "ibex_pmp_reset.svh"
+  `else
+    `include "ibex_pmp_reset_default.svh"
+  `endif
+ 
   // -----------------
   // PMP registers
   // -----------------
-
+   
   if (PMPEnable) begin : g_pmp_registers
-    // PMP reset values
-    `ifdef IBEX_CUSTOM_PMP_RESET_VALUES
-      `include "ibex_pmp_reset.svh"
-    `else
-      `include "ibex_pmp_reset_default.svh"
-    `endif
 
     pmp_mseccfg_t                pmp_mseccfg_q, pmp_mseccfg_d;
     logic                        pmp_mseccfg_we;
@@ -1206,6 +1227,137 @@ module ibex_cs_registers #(
   end
 
   assign csr_pmp_mseccfg_o = pmp_mseccfg;
+  
+  // -----------------
+  // BCP registers
+  // -----------------
+   
+  if (BCPEnable) begin : g_bcp_registers
+
+    bcp_mseccfg_t                bcp_mseccfg_q, bcp_mseccfg_d;
+    logic                        bcp_mseccfg_we;
+    logic                        bcp_mseccfg_err;
+    bcp_cfg_t                    bcp_cfg         [BCPNumRegions];
+    bcp_cfg_t                    bcp_cfg_wdata   [BCPNumRegions];
+    logic [BCPAddrWidth-1:0]     bcp_addr        [BCPNumRegions];
+    logic [BCPNumRegions-1:0]    bcp_cfg_we;
+    logic [BCPNumRegions-1:0]    bcp_cfg_err;
+    logic [BCPNumRegions-1:0]    bcp_addr_we;
+    logic [BCPNumRegions-1:0]    bcp_addr_err;
+
+    // Expanded / qualified register read data
+    for (genvar i = 0; i < BCP_MAX_REGIONS; i++) begin : g_bcp_exp_rd_data
+      if (i < BCPNumRegions) begin : g_implemented_regions
+        // Add in zero padding for reserved fields
+        assign bcp_cfg_rdata[i] = {3'b000, bcp_cfg[i].mode, 3'b000};
+        assign bcp_addr_rdata[i] = bcp_addr[i];
+        end
+
+      end else begin : g_bcp_other_regions
+        // Non-implemented regions read as zero
+        assign bcp_cfg_rdata[i]  = '0;
+        assign bcp_addr_rdata[i] = '0;
+      end
+    end
+
+    // Write data calculation
+    for (genvar i = 0; i < BCPNumRegions; i++) begin : g_bcp_csrs
+      // -------------------------
+      // Instantiate cfg registers
+      // -------------------------
+      assign bcp_cfg_we[i] = csr_we_int &
+                             (csr_addr == (CSR_OFF_BCP_CFG + (i[11:0] >> 2)));
+
+      // Select the correct WDATA (each CSR contains 4 CFG fields, each with 6 RES bits)
+      always_comb begin
+        unique case (csr_wdata_int[(i%4)*BCP_CFG_W+3+:2])
+          2'b00   : bcp_cfg_wdata[i].mode = BCP_MODE_OFF;
+          2'b01   : bcp_cfg_wdata[i].mode = BCP_MODE_TOR;
+          2'b10   : bcp_cfg_wdata[i].mode = BCP_MODE_OOR;
+          2'b11   : bcp_cfg_wdata[i].mode = BCP_MODE_NAPOT;
+          default : bcp_cfg_wdata[i].mode = BCP_MODE_OFF;
+        endcase
+      end
+
+      ibex_csr #(
+        .Width     ($bits(bcp_cfg_t)),
+        .ShadowCopy(ShadowCSR),
+        .ResetValue(bcp_cfg_rst[i])
+      ) u_bcp_cfg_csr (
+        .clk_i     (clk_i),
+        .rst_ni    (rst_ni),
+        .wr_data_i (bcp_cfg_wdata[i]),
+        .wr_en_i   (bcp_cfg_we[i]),
+        .rd_data_o (bcp_cfg[i]),
+        .rd_error_o(bcp_cfg_err[i])
+      );
+
+      // --------------------------
+      // Instantiate addr registers
+      // --------------------------
+      if (i < BCPNumRegions - 1) begin : g_bcp_lower
+        assign bcp_addr_we[i] = csr_we_int &
+                                (bcp_cfg[i+1].mode != BCP_MODE_TOR) &
+                                (csr_addr == (CSR_OFF_BCP_ADDR + i[11:0]));
+      end else begin : g_bcp_upper
+        assign bcp_addr_we[i] = csr_we_int &
+                                (csr_addr == (CSR_OFF_BCP_ADDR + i[11:0]));
+      end
+
+      ibex_csr #(
+        .Width     (BCPAddrWidth),
+        .ShadowCopy(ShadowCSR),
+        .ResetValue(bcp_addr_rst[i])
+      ) u_pmp_addr_csr (
+        .clk_i     (clk_i),
+        .rst_ni    (rst_ni),
+        .wr_data_i (csr_wdata_int),
+        .wr_en_i   (bcp_addr_we[i]),
+        .rd_data_o (bcp_addr[i]),
+        .rd_error_o(bcp_addr_err[i])
+      );
+
+      assign csr_bcp_cfg_o[i]  = bcp_cfg[i];
+      assign csr_bcp_addr_o[i] = bcp_addr_rdata[i];
+    end
+
+    assign bcp_mseccfg_we = csr_we_int & (csr_addr == CSR_MSECCFG);
+
+    // MSECCFG.POB/MSECCFG.AOB
+    assign bcp_mseccfg_d.pob = csr_wdata_int[CSR_MSECCFG_POB_BIT_HIGH : CSR_MSECCFG_POB_BIT_LOW];
+    assign bcp_mseccfg_d.aob = csr_wdata_int[CSR_MSECCFG_AOB_BIT_HIGH : CSR_MSECCFG_AOB_BIT_LOW];
+
+    ibex_csr #(
+      .Width     ($bits(bcp_mseccfg_t)),
+      .ShadowCopy(ShadowCSR),
+      .ResetValue(bcp_mseccfg_rst)
+    ) u_bcp_mseccfg (
+      .clk_i     (clk_i),
+      .rst_ni    (rst_ni),
+      .wr_data_i (bcp_mseccfg_d),
+      .wr_en_i   (bcp_mseccfg_we),
+      .rd_data_o (bcp_mseccfg_q),
+      .rd_error_o(bcp_mseccfg_err)
+    );
+
+    assign bcp_csr_err = (|bcp_cfg_err) | (|bcp_addr_err) | bcp_mseccfg_err;
+    assign bcp_mseccfg = bcp_mseccfg_q;
+
+  end else begin : g_no_bcp_tieoffs
+    // Generate tieoffs when BCP is not configured
+    for (genvar i = 0; i < BCP_MAX_REGIONS; i++) begin : g_bcp_rdata
+      assign bcp_addr_rdata[i] = '0;
+      assign bcp_cfg_rdata[i]  = '0;
+    end
+    for (genvar i = 0; i < BCPNumRegions; i++) begin : g_bcp_outputs
+      assign csr_bcp_cfg_o[i]  = pmp_cfg_t'(1'b0);
+      assign csr_bcp_addr_o[i] = '0;
+    end
+    assign bcp_csr_err = 1'b0;
+    assign bcp_mseccfg = '0;
+  end
+
+  assign csr_bcp_mseccfg_o = bcp_mseccfg;
 
   //////////////////////////
   //  Performance monitor //

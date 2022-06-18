@@ -130,9 +130,9 @@ module ibex_id_stage #(
   input  logic                      irq_nm_i,
   output logic                      nmi_mode_o,
 
-  input  logic                      tag_load_addr_err_i,
-  input  logic                      tag_arith_addr_err_i,
-  input  logic                      tag_store_addr_err_i,
+  input  logic                      bcp_load_addr_err_i,
+  input  logic                      bcp_arith_addr_err_i,
+  input  logic                      bcp_store_addr_err_i,
 
   input  logic                      lsu_load_err_i,
   input  logic                      lsu_store_err_i,
@@ -591,9 +591,9 @@ module ibex_id_stage #(
     .exc_cause_o           (exc_cause_o),
   
     // bound-checking related signals
-    .load_addr_err_i (tag_load_addr_err_i),
-    .arith_addr_err_i(tag_arith_addr_err_i),
-    .store_addr_err_i(tag_store_addr_err_i),
+    .load_addr_err_i (bcp_load_addr_err_i),
+    .arith_addr_err_i(bcp_arith_addr_err_i),
+    .store_addr_err_i(bcp_store_addr_err_i),
 
     // LSU
     .lsu_addr_last_i(lsu_addr_last_i),
