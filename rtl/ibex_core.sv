@@ -674,6 +674,7 @@ module ibex_core import ibex_pkg::*; #(
     .RV32T          (RV32T),
     .RV32M          (RV32M),
     .RV32B          (RV32B),
+    .BCPNumRegions  (BCPNumRegions),
     .BranchTargetALU(BranchTargetALU)
   ) ex_block_i (
     .clk_i (clk_i),

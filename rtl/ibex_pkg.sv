@@ -465,7 +465,7 @@ package ibex_pkg;
 
   typedef struct packed {
     bcp_cfg_mode_e mode;
-  } bcp_mseccfg_t;
+  } bcp_cfg_t;
 
   // CSRs
   typedef enum logic[11:0] {

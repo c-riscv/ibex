@@ -12,6 +12,7 @@ module ibex_ex_block #(
   parameter bit               RV32T           = 0,
   parameter ibex_pkg::rv32m_e RV32M           = ibex_pkg::RV32MFast,
   parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
+  parameter int unsigned      BCPNumRegions   = 4,
   parameter bit               BranchTargetALU = 0
 ) (
   input  logic                  clk_i,
@@ -52,9 +53,9 @@ module ibex_ex_block #(
   output logic                  branch_decision_o,     // to ID
 
   // BCP signals
-  input  logic [31:0]           csr_bcp_addr_i [BCPNumRegions];
-  input  bcp_cfg_t              csr_bcp_cfg_i  [BCPNumRegions];
-  input  bcp_mseccfg_t          csr_bcp_mseccfg_i;
+  input  logic [31:0]            csr_bcp_addr_i [BCPNumRegions],
+  input  ibex_pkg::bcp_cfg_t     csr_bcp_cfg_i  [BCPNumRegions],
+  input  ibex_pkg::bcp_mseccfg_t csr_bcp_mseccfg_i,
   
   output logic                  bcp_load_addr_err_o,    // to ID
   output logic                  bcp_arith_addr_err_o,   // to ID
@@ -214,4 +215,15 @@ module ibex_ex_block #(
   assign bcp_load_addr_err_o  = 0;
   assign bcp_arith_addr_err_o = 0;
   assign bcp_store_addr_err_o = 0;
+
+  logic [31:0]            unused_csr_bcp_addr [BCPNumRegions];
+  ibex_pkg::bcp_cfg_t     unused_csr_bcp_cfg  [BCPNumRegions];
+  ibex_pkg::bcp_mseccfg_t unused_csr_bcp_mseccfg;
+
+  for (genvar i = 0; i < BCPNumRegions; i++) begin : g_bcp_unuse
+      assign unused_csr_bcp_addr[i] = csr_bcp_addr_i[i];
+      assign unused_csr_bcp_cfg[ i] = csr_bcp_cfg_i[ i];
+  end
+  assign unused_csr_bcp_mseccfg = csr_bcp_mseccfg_i;
+  
 endmodule

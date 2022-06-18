@@ -433,6 +433,32 @@ module ibex_cs_registers #(
       CSR_PMPADDR14: csr_rdata_int = pmp_addr_rdata[14];
       CSR_PMPADDR15: csr_rdata_int = pmp_addr_rdata[15];
 
+      // BCP registers
+      CSR_BCPCFG0:   csr_rdata_int = {bcp_cfg_rdata[3],  bcp_cfg_rdata[2],
+                                      bcp_cfg_rdata[1],  bcp_cfg_rdata[0]};
+      CSR_BCPCFG1:   csr_rdata_int = {bcp_cfg_rdata[7],  bcp_cfg_rdata[6],
+                                      bcp_cfg_rdata[5],  bcp_cfg_rdata[4]};
+      CSR_BCPCFG2:   csr_rdata_int = {bcp_cfg_rdata[11], bcp_cfg_rdata[10],
+                                      bcp_cfg_rdata[9],  bcp_cfg_rdata[8]};
+      CSR_BCPCFG3:   csr_rdata_int = {bcp_cfg_rdata[15], bcp_cfg_rdata[14],
+                                      bcp_cfg_rdata[13], bcp_cfg_rdata[12]};
+      CSR_BCPADDR0:  csr_rdata_int = bcp_addr_rdata[0];
+      CSR_BCPADDR1:  csr_rdata_int = bcp_addr_rdata[1];
+      CSR_BCPADDR2:  csr_rdata_int = bcp_addr_rdata[2];
+      CSR_BCPADDR3:  csr_rdata_int = bcp_addr_rdata[3];
+      CSR_BCPADDR4:  csr_rdata_int = bcp_addr_rdata[4];
+      CSR_BCPADDR5:  csr_rdata_int = bcp_addr_rdata[5];
+      CSR_BCPADDR6:  csr_rdata_int = bcp_addr_rdata[6];
+      CSR_BCPADDR7:  csr_rdata_int = bcp_addr_rdata[7];
+      CSR_BCPADDR8:  csr_rdata_int = bcp_addr_rdata[8];
+      CSR_BCPADDR9:  csr_rdata_int = bcp_addr_rdata[9];
+      CSR_BCPADDR10: csr_rdata_int = bcp_addr_rdata[10];
+      CSR_BCPADDR11: csr_rdata_int = bcp_addr_rdata[11];
+      CSR_BCPADDR12: csr_rdata_int = bcp_addr_rdata[12];
+      CSR_BCPADDR13: csr_rdata_int = bcp_addr_rdata[13];
+      CSR_BCPADDR14: csr_rdata_int = bcp_addr_rdata[14];
+      CSR_BCPADDR15: csr_rdata_int = bcp_addr_rdata[15];
+
       CSR_DCSR: begin
         csr_rdata_int = dcsr_q;
         dbg_csr       = 1'b1;
@@ -1251,8 +1277,6 @@ module ibex_cs_registers #(
         // Add in zero padding for reserved fields
         assign bcp_cfg_rdata[i] = {3'b000, bcp_cfg[i].mode, 3'b000};
         assign bcp_addr_rdata[i] = bcp_addr[i];
-        end
-
       end else begin : g_bcp_other_regions
         // Non-implemented regions read as zero
         assign bcp_cfg_rdata[i]  = '0;
@@ -1350,7 +1374,7 @@ module ibex_cs_registers #(
       assign bcp_cfg_rdata[i]  = '0;
     end
     for (genvar i = 0; i < BCPNumRegions; i++) begin : g_bcp_outputs
-      assign csr_bcp_cfg_o[i]  = pmp_cfg_t'(1'b0);
+      assign csr_bcp_cfg_o[i]  = bcp_cfg_t'(1'b0);
       assign csr_bcp_addr_o[i] = '0;
     end
     assign bcp_csr_err = 1'b0;
@@ -1740,7 +1764,7 @@ module ibex_cs_registers #(
     .rd_error_o(cpuctrl_err)
   );
 
-  assign csr_shadow_err_o = mstatus_err | mtvec_err | pmp_csr_err | cpuctrl_err;
+  assign csr_shadow_err_o = mstatus_err | mtvec_err | pmp_csr_err | cpuctrl_err | bcp_csr_err;
 
   ////////////////
   // Assertions //

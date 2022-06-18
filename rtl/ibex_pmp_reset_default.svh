@@ -69,10 +69,10 @@ localparam bcp_cfg_t bcp_cfg_rst[16] = '{
   '{mode: BCP_MODE_TOR}, // region 12
   '{mode: BCP_MODE_TOR}, // region 13
   '{mode: BCP_MODE_TOR}, // region 14
-  '{mode: BCP_MODE_TOR}, // region 15
+  '{mode: BCP_MODE_TOR}  // region 15
 };
 
-localparam [33:0] bcp_addr_rst[16] = '{
+localparam [31:0] bcp_addr_rst[16] = '{
   32'h0, // region 0
   32'h0, // region 1
   32'h0, // region 2
