@@ -102,9 +102,9 @@ module ibex_bcp #(
   
   logic cmp_underflow;
   logic cmp_overflow;
-  ;
-  logic result_underflow;
-  logic result_overflow;
+
+  logic result_tag_err;
+  logic cmp_err;
 
   assign ain_tag     = operand_a_i      [XLEN -1 : XLEN - TagWidth];
   assign result_tag  = adder_result_ex_i[XLEN -1 : XLEN - TagWidth];
@@ -133,6 +133,7 @@ module ibex_bcp #(
   assign ain_region_err = ain_tag_region &&
                        ( (ain_region_start_addr > ain_region_end_addr)
                        | (ain_region_start_tag != ain_region_end_tag)
+                       | (ain_tag == 8'hff)
                        );
 
   assign new_region_start_index = {new_tag[BCPNumRegions_BIT - 1 : 1], 1'b0};
@@ -147,6 +148,7 @@ module ibex_bcp #(
   assign new_region_err = new_tag_region &&
                        ( (new_region_start_addr > new_region_end_addr)
                        | (new_region_start_tag != new_region_end_tag)
+                       | (new_tag == 8'hff)
                        );
 
   // All RV32T extension exclude SUBP and SLTUP
@@ -223,8 +225,8 @@ module ibex_bcp #(
   assign cmp_lb_in = ( operator_i == ALU_SETAG ) ? new_region_start_addr : result_addr_lastbyte;
   assign cmp_ub_in = ( operator_i == ALU_SETAG ) ? new_region_end_addr   : result_addr_lastbyte;
   
-  // 1. bound tag is 8'h00 or 8'hff
-  // 2. bound tag != result tag
+  // 1. a_tag is 8'h00 or 8'hff
+  // 2. a_tag != result tag
   //
   // INCP DECP INCPI CVT.I.P
   // 3.1 result_addr < a_start_tolerant
@@ -234,7 +236,7 @@ module ibex_bcp #(
   // 4.1 result_addr < a_start_alloc
   // 5.2 result_addr + size -1 > a_end_alloc
   //
-  // SETAG SETAGI
+  // SETAG SETAGI fault
   // 5.1 new_start_tolerant < a_start_tolerant
   // 5.2 new_end_tolerant   > a_end_tolerant
 
@@ -245,19 +247,17 @@ module ibex_bcp #(
   // output signals
   assign result_tag_err = ain_tag != result_tag;
 
-  assign bound_err      = cmp_underflow 
-                        | cmp_overflow
-                        | ain_tag_err;
+  assign cmp_err      = cmp_underflow | cmp_overflow | ain_tag_err;
 
   // store
   assign bcp_store_addr_err_o = bound_sel_access & data_we_i 
-                            &  (bound_err | result_tag_err);
+                            &  (cmp_err | result_tag_err);
   // load
   assign bcp_load_addr_err_o  = bound_sel_access & ~data_we_i 
-                            &  (bound_err | result_tag_err);
+                            &  (cmp_err | result_tag_err);
   
   // incp, decp, incpi, cvt.i.p, setag, setagi
-  assign bcp_arith_addr_err_o = (bound_sel_arith & (bound_err | result_tag_err))
-                              | (bound_sel_setag & (bound_err | new_tag_err));
+  assign bcp_arith_addr_err_o = (bound_sel_arith & (cmp_err | result_tag_err))
+                              | (bound_sel_setag & (cmp_err | new_tag_err));
 
 endmodule

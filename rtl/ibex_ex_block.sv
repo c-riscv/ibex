@@ -52,14 +52,14 @@ module ibex_ex_block #(
   output logic [31:0]           branch_target_o,       // to IF
   output logic                  branch_decision_o,     // to ID
 
-  // BCP signals
+/*   // BCP signals
   input  logic [31:0]            csr_bcp_addr_i [BCPNumRegions],
   input  ibex_pkg::bcp_cfg_t     csr_bcp_cfg_i  [BCPNumRegions],
   input  ibex_pkg::bcp_mseccfg_t csr_bcp_mseccfg_i,
   
   output logic                  bcp_load_addr_err_o,    // to ID
   output logic                  bcp_arith_addr_err_o,   // to ID
-  output logic                  bcp_store_addr_err_o,   // to ID
+  output logic                  bcp_store_addr_err_o,   // to ID */
 
   output logic                  ex_valid_o             // EX has valid output
 
@@ -209,7 +209,7 @@ module ibex_ex_block #(
   // final cycle of ALU operation).
   assign ex_valid_o = multdiv_sel ? multdiv_valid : ~(|alu_imd_val_we);
 
-  ////////////////////
+/*   ////////////////////
   // Bound-Checking //
   ////////////////////
   assign bcp_load_addr_err_o  = 0;
@@ -224,6 +224,6 @@ module ibex_ex_block #(
       assign unused_csr_bcp_addr[i] = csr_bcp_addr_i[i];
       assign unused_csr_bcp_cfg[ i] = csr_bcp_cfg_i[ i];
   end
-  assign unused_csr_bcp_mseccfg = csr_bcp_mseccfg_i;
+  assign unused_csr_bcp_mseccfg = csr_bcp_mseccfg_i; */
   
 endmodule

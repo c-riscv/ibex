@@ -598,12 +598,13 @@ module ibex_core import ibex_pkg::*; #(
     .bcp_store_addr_err_i (bcp_store_addr_err_ex),
 
     // LSU
-    .lsu_req_o     (lsu_req),  // to load store unit
-    .lsu_we_o      (lsu_we),  // to load store unit
-    .lsu_type_o    (lsu_type),  // to load store unit
-    .lsu_sign_ext_o(lsu_sign_ext),  // to load store unit
-    .lsu_wdata_o   (lsu_wdata),  // to load store unit
-    .lsu_req_done_i(lsu_req_done),  // from load store unit
+    .lsu_req_o     (lsu_req),      // to load store unit
+    .lsu_req_dec_o (lsu_req_dec),  // to bcp unit
+    .lsu_we_o      (lsu_we),       // to load store unit
+    .lsu_type_o    (lsu_type),     // to load store unit
+    .lsu_sign_ext_o(lsu_sign_ext), // to load store unit
+    .lsu_wdata_o   (lsu_wdata),    // to load store unit
+    .lsu_req_done_i(lsu_req_done), // from load store unit
 
     .lsu_addr_incr_req_i(lsu_addr_incr_req),
     .lsu_addr_last_i    (lsu_addr_last),
@@ -714,17 +715,56 @@ module ibex_core import ibex_pkg::*; #(
     .branch_target_o  (branch_target_ex),  // to IF
     .branch_decision_o(branch_decision),  // to ID
 
-    // BCP
-    .csr_bcp_cfg_i    (csr_bcp_cfg),
-    .csr_bcp_addr_i   (csr_bcp_addr),
-    .csr_bcp_mseccfg_i(csr_bcp_mseccfg),
-
-    .bcp_load_addr_err_o  (bcp_load_addr_err_ex),
-    .bcp_arith_addr_err_o (bcp_arith_addr_err_ex),
-    .bcp_store_addr_err_o (bcp_store_addr_err_ex),
-
     .ex_valid_o(ex_valid)
   );
+
+  ///////////////////////////////
+  // Bound Checking Protection //
+  ///////////////////////////////
+  if (RV32T) begin: g_bcp
+  ibex_bcp #(
+    // Number of implemented regions, must be 2*N and larger than 4
+    .BCPNumRegions(BCPNumRegions)
+  ) (
+  // Interface to CSRs
+  .csr_bcp_cfg_i(csr_bcp_cfg),
+  .csr_bcp_addr_i(csr_bcp_addr),
+  .csr_bcp_mseccfg_i(csr_bcp_mseccfg),
+
+  .operator_i(alu_operator_ex),
+  .operand_a_i(alu_operand_a_ex),
+  .operand_b_i(alu_operand_b_ex),
+
+  // signals to/from ID/EX stage
+  .data_type_i(lsu_type),      // data type: word, half word, byte -> from ID/EX
+  .data_req_i(lsu_req_dec),    // data request, LOAD/STORE/AMO
+  .data_we_i(lsu_we),          // write enable
+
+  .adder_result_ex_i(alu_adder_result_ex), // address computed in ALU 
+
+  // Bound checking signals
+  .bcp_load_addr_err_o(bcp_load_addr_err_ex),
+  .bcp_arith_addr_err_o(bcp_arith_addr_err_ex),
+  .bcp_store_addr_err_o(bcp_store_addr_err_ex)
+  );
+  end
+  else begin: g_no_bcp
+  // TODO unused signals
+    // BCP signals
+  logic [31:0]  unuse_csr_bcp_addr [BCPNumRegions];
+  bcp_cfg_t     unuse_csr_bcp_cfg  [BCPNumRegions];
+  bcp_mseccfg_t unuse_csr_bcp_mseccfg;
+  logic         lsu_req_dec;
+
+  assign unuse_csr_bcp_addr    = csr_bcp_addr;
+  assign unuse_csr_bcp_cfg     = csr_bcp_cfg;
+  assign unuse_csr_bcp_mseccfg = csr_bcp_mseccfg;
+  assign unuse_lsu_req_dec     = lsu_req_dec;
+
+  assign bcp_load_addr_err_ex  = 1'b0;
+  assign bcp_arith_addr_err_ex = 1'b0;
+  assign bcp_store_addr_err_ex = 1'b0;
+  end
 
   /////////////////////
   // Load/store unit //

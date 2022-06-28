@@ -110,6 +110,7 @@ module ibex_id_stage #(
 
   // Interface to load store unit
   output logic                      lsu_req_o,
+  output logic                      lsu_req_dec_o,
   output logic                      lsu_we_o,
   output logic [1:0]                lsu_type_o,
   output logic                      lsu_sign_ext_o,
@@ -652,6 +653,7 @@ module ibex_id_stage #(
   assign div_en_id       = instr_executing ? div_en_dec                      : 1'b0;
 
   assign lsu_req_o               = lsu_req;
+  assign lsu_req_dec_o           = lsu_req_dec;
   assign lsu_we_o                = lsu_we;
   assign lsu_type_o              = lsu_type;
   assign lsu_sign_ext_o          = lsu_sign_ext;
