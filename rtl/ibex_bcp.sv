@@ -199,7 +199,7 @@ module ibex_bcp #(
       bound_sel_access :  cmp_lowerbound = ain_tag_region ? ain_region_start_addr : ain_elh_alloc_start;
       bound_sel_setag,  
       bound_sel_arith  :  cmp_lowerbound = ain_tag_region ? ain_region_start_addr : ain_elh_tolerant_start;
-      default:;
+      default: cmp_upperbound = 24'b0;
     endcase
   end
 
@@ -209,21 +209,23 @@ module ibex_bcp #(
       bound_sel_access:  cmp_upperbound = ain_tag_region ? ain_region_end_addr : ain_elh_alloc_end;
       bound_sel_arith,
       bound_sel_setag:   cmp_upperbound = ain_tag_region ? ain_region_end_addr : ain_elh_tolerant_end;
-      default:;
+      default: cmp_upperbound = 24'd0
     endcase
   end
   
   always_comb begin
-  unique case (data_type_i)
-    2'b00:   result_addr_lastbyte = result_addr;
-    2'b01:   result_addr_lastbyte = {result_addr[23:1], 1'b1};
-    2'b10:   result_addr_lastbyte = {result_addr[23:2], 2'b11};
-    default: result_addr_lastbyte = ain_addr;
+    unique case (data_type_i)
+      2'b00:   result_addr_lastbyte = result_addr;
+      2'b01:   result_addr_lastbyte = {result_addr[23:1], 1'b1};
+      2'b10:   result_addr_lastbyte = {result_addr[23:2], 2'b11};
+      default: result_addr_lastbyte = result_addr;
     endcase
   end
   
-  assign cmp_lb_in = ( operator_i == ALU_SETAG ) ? new_region_start_addr : result_addr_lastbyte;
-  assign cmp_ub_in = ( operator_i == ALU_SETAG ) ? new_region_end_addr   : result_addr_lastbyte;
+  assign cmp_lb_in = ( operator_i == ALU_SETAG ) ? new_region_start_addr : 
+                                  ( data_req_i ) ? result_addr_lastbyte : result_addr;
+  assign cmp_ub_in = ( operator_i == ALU_SETAG ) ? new_region_end_addr   : 
+                                  ( data_req_i ) ? result_addr_lastbyte : result_addr;
   
   // 1. a_tag is 8'h00 or 8'hff
   // 2. a_tag != result tag
